@@ -1,6 +1,10 @@
 sclp - build
 ====
 
+***
+**WARNING - these instructions are incomplete at this time. Feel free to follow along as we update them, but when you get to the end, you wont have a working system. This warning will be removed when the instructions are complete.**
+***
+
 **Introduction**
 
 This step-by-step guide walks you through building the SCLP server and Chromebook boot image from scratch.
