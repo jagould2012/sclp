@@ -66,7 +66,6 @@ Workstations will be connected to the server via a Cisco 24 port gigabit switch 
 
 ***
 
-Much of the project revolves around making Edubuntu run on the Chromebook hardware, loaded from the server via NFS. We plan to maintain complete documentation of how to achieve this here, and host related files.
+Much of the project revolves around making Edubuntu run on the Chromebook hardware, loaded from the server via NFS. Instructions to do this are located [here](BUILD.md).
 
-<More to come>
-
+Questions? Email jagould2012 -at- gmail .com
