@@ -34,7 +34,7 @@ Then, restart networking.
 
 The settings above assume that your internet connection on the first ethernet port assigns an address to you automatically. If your provider has given you a static address, you need to set it here.
 
-** Setup the DHCP Server**
+**Setup the DHCP Server**
 
 The Chromebooks on the network will get their address from the server and also use it as a router. To do so, the server needs to run a DHCP server on the second ethernet port:
 
@@ -63,7 +63,7 @@ And set the following settings, save, and exit:
 		range 192.168.100.2 192.168.100.99;
 	} 
 	
-** Setup the NFS Server**
+**Setup the NFS Server**
 
 The Chomebooks will load the majority of their software from the server over the network. Setup the NFS server:
 
