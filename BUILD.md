@@ -77,8 +77,8 @@ The Chomebooks will load the majority of their software from the server over the
 
 Add to exports, save, and exit:
 
-	/home 192.168.100.254(rw,sync,no_root_squash,no_subtree_check)
-	/opt/nfs 192.168.100.254(ro,sync,no_root_squash,no_subtree_check) 
+	/home 192.168.100.0/255.255.255.0(rw,sync,no_root_squash,no_subtree_check)
+	/opt/nfs 192.168.100.0/255.255.255.0(ro,sync,no_root_squash,no_subtree_check) 
 	
 Then start the server:
 
@@ -194,7 +194,7 @@ Then edit the modules file:
 	
 And add your network card module, save, and exit:
 
-	asix
+	ax88179_178a
 
 Finally, update the initramfs:
 
@@ -238,7 +238,7 @@ Add these lines, save, and exit:
 
 	menuentry "Edubuntu Workstation" {
 		root=(hd0,msdos1)
-		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs ro rootdelay=5 overlayroot=tmpfs
+		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs ro rootdelay=5 overlayroot=tmpfs acpi=off
 		initrd /boot/initrd.img 		
 	}
 
