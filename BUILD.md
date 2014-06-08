@@ -261,6 +261,31 @@ Run the script:
 	./trusty-patch.sh
 	update-initramfs -u
 
+**Fix Suspend Issue**
+
+A script is need to fix some suspend issues. Download the 05_sound script from this repo to /etc/pm/sleep.d/ and give it the right permissions:
+
+	cd /etc/pm/sleep.d/
+	chmod +x 05_sound
+
+Edit rc.local:
+
+	nano /etc/rc.local
+	
+Add the following lines, save, and exit:
+	
+	echo EHCI > /proc/acpi/wakeup
+	echo HDEF > /proc/acpi/wakeup
+	echo XHCI > /proc/acpi/wakeup
+	echo LID0 > /proc/acpi/wakeup
+	echo TPAD > /proc/acpi/wakeup
+	echo TSCR > /proc/acpi/wakeup
+	echo 300 > /sys/class/backlight/intel_backlight/brightness
+	rfkill block bluetooth
+	/etc/init.d/bluetooth stop
+
+Do not remove the line at the end that says "exit 0"
+
 **Fix Shutdown Script**
 
 (outside the chroot)
