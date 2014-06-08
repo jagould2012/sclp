@@ -169,6 +169,17 @@ We need to set the language of the image. The following selects US English:
 	locale-gen en_US.UTF-8
 	dpkg-reconfigure locales
 	
+**Install Language Packs**
+
+Language packs are installed by a two digit code, which can be found [here](http://www.loc.gov/standards/iso639-2/php/English_list.php). To test the code, type:
+
+	check-language-support -l fr
+	
+Which will display all packages available for french. To install those packages, type:
+
+	yes | apt-get install `check-language-support -l fr`
+	
+
 **Install Network Driver**
 
 (still in chroot)
@@ -365,7 +376,6 @@ Incomplete - more instructions to come:
 * Set grub default / time
 * Move overlay to sda
 * Add splash and quiet
-* Languages
 
 
 
