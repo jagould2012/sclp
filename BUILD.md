@@ -144,7 +144,21 @@ Then edit the fstab file:
 Add the following, save, and exit:
 
 	192.168.100.254:/home nfs auto,noatime,nolock,bg,nfsvers=4,intr,tcp,actimeo=1800 0 0
+
+**Setup Overlayroot**
+
+(still in chroot)
+
+As the NFS root is read only, the Chromebook needs somewhere to write temp files, print jobs, etc. Edit the overlayroot.conf:
+
+	nano /etc/overlayroot.conf
 	
+Set the following, save, and exit:
+
+	overlayroot="tmpfs"
+	
+This will create temp folders in memory. Later we'll move this to the Chromebooks flash.
+
 **Set the Image Locale**
 
 (still in chroot)
@@ -222,7 +236,7 @@ Run the script:
 
 	cd /chromeos/
 	./trusty-patch.sh
-	pdate-initramfs -u
+	update-initramfs -u
 	
 **Test the Image**
 
@@ -238,7 +252,7 @@ Add these lines, save, and exit:
 
 	menuentry "Edubuntu Workstation" {
 		root=(hd0,msdos1)
-		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs ro rootdelay=5 overlayroot=tmpfs acpi=off
+		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs rootdelay=5 acpi=off
 		initrd /boot/initrd.img 		
 	}
 
@@ -281,6 +295,10 @@ Incomplete - more instructions to come:
 * Connect LDAP to Google education
 * Hamachi remote access
 * Install on Chromebook
+* Make legacy permanent
+* Set grub default / time
+* Move overlay to sda
+* Add splash and quiet
 
 	
 
