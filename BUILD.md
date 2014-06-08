@@ -365,8 +365,7 @@ Incomplete - more instructions to come:
 * Set grub default / time
 * Move overlay to sda
 * Add splash and quiet
-* Sleep issues	
-
+* Languages
 
 
 
