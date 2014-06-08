@@ -1,6 +1,8 @@
 sclp
 ====
 
+[Click here to go straight to the instructions...](BUILD.md).
+
 **Sustainable Computer Lab Project**
 
 Our goal is to design a low cost, sustainable computer lab for use in developing countries by non profit organizations. Requirements for the project include:
