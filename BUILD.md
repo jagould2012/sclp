@@ -120,6 +120,7 @@ Update the source cache, and continue to install:
 	apt-get install nano
 	apt-get install edubuntu-desktop
 	apt-get install linux-image-generic-lts-trusty
+	apt-get remove modemmanager
 	
 Now determine the kernel version (using version number in /boot - ours is 3.13.0-24-generic):
 
@@ -214,6 +215,28 @@ Finally, update the initramfs:
 
 	update-initramfs -u
 	
+**Setup Network**
+
+(still in chroot)
+
+Edit intefaces:
+
+	nano /etc/network/interfaces
+	
+Set the following, save, and exit:
+
+	auto lo
+	iface lo inet loopback
+	
+	auto eth0
+	iface eth0 inet dhcp
+
+Set the permissions on the script:
+
+	cd /etc/initramfs-tools/scripts/init-bottom/
+	chown root:root 09-hostname
+	chmod 700 09-hostname
+	
 **Client Hostname**
 
 (still in chroot)
@@ -237,6 +260,24 @@ Run the script:
 	cd /chromeos/
 	./trusty-patch.sh
 	update-initramfs -u
+
+**Fix Shutdown Script**
+
+(outside the chroot)
+
+A default shutdown script appears to try to unmount the root NFS mount too early during shutdown. Edit the script:
+
+	nano /etc/init.d/umountnfs.sh
+	
+Find the line:
+
+	if [ "$DIRS" ]
+	
+Change to match below, save, and exit:
+
+	if [ "$DIRS" -ne "/media/root-ro" ]
+	
+Be careful with the spaces and make sure it is exactly as above.
 	
 **Test the Image**
 
@@ -252,7 +293,7 @@ Add these lines, save, and exit:
 
 	menuentry "Edubuntu Workstation" {
 		root=(hd0,msdos1)
-		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs rootdelay=5 acpi=off
+		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs rootdelay=5 noresume noswap i915.modeset=1 tpm_tis.force=1 tpm_tis.interrupts=0 nmi_watchdog=panic,lapic
 		initrd /boot/initrd.img 		
 	}
 
@@ -299,8 +340,7 @@ Incomplete - more instructions to come:
 * Set grub default / time
 * Move overlay to sda
 * Add splash and quiet
-
-	
+* Sleep issues	
 
 
 
