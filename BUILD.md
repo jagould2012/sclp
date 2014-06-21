@@ -183,7 +183,7 @@ Add this option under loginShell:
 	
 Add the following lines to the givenName and sn attributes (replacing with your domain name):
 
-	<onchange>=autoFill(mail;%givenName|0-1/l%%sn/l%@newlifeorissa.net)</onchange>
+	<onchange>=autoFill(mail;%givenName|0-1/l%%sn/l%@yourdomain.org)</onchange>
 
 Add a new attribute:
 
