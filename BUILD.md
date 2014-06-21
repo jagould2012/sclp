@@ -67,6 +67,12 @@ And set the following settings, save, and exit:
 		range 192.168.100.2 192.168.100.99;
 	} 
 	
+**Setup the Router**
+
+The server will act as a router for all of the Chromebooks. Setup the router:
+
+
+
 **Setup the NFS Server**
 
 The Chomebooks will load the majority of their software from the server over the network. Setup the NFS server:
