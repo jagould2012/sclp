@@ -55,7 +55,7 @@ Then edit the dhcpf.conf
 	
 And set the following settings, save, and exit:
 
-	option domain-name "yourdomain.org"
+	option domain-name "yourdomain.org";
 	option domain-name-servers 192.168.100.254;
 	authoritative;
 	option subnet-mask 255.255.255.0;
@@ -84,6 +84,128 @@ Then start the server:
 
 	sudo exportfs -a
 	sudo service nfs-kernel-server start 
+	
+**Setup the LDAP Server**
+
+The Chromebook will login against a central user database on the server called LDAP. Setup the LDAP server:
+
+	sudo apt-get install slapd ldap-utils
+	
+Enter your admin password when prompted.
+
+Now configure:
+
+	sudo dpkg-reconfigure slapd
+	
+With the following options:
+
+	Omit OpenLDAP server configuration?
+	No
+	
+	DNS domain name:
+	yourdomain.org
+	
+	Organization name:
+	yourdomain
+	
+	Administrator password:
+	<your admin password>
+	
+	Administrator password:
+	HDB
+	
+	Remove the database when slapd is purged?
+	No
+	
+	Move old database?
+	Yes
+	
+	Allow LDAPv2 protocol?
+	No
+	
+LDAP is easier to manage with a graphical interface. Install the manager:
+
+	sudo apt-get install phpldapadmin
+	
+Configure the manager:
+
+	sudo nano /etc/phpldapadmin/config.php
+	
+Set these options, save, and exit:
+
+	$servers->setValue('server','base',array('dc=yourdomain,dc=org'));
+	$servers->setValue('login','bind_id','cn=admin,dc=yourdomain,dc=org');
+	$config->custom->appearance['hide_template_warning'] = true;
+
+Fix a bug in phpldapadmin to do with php5:
+
+	sudo nano /usr/share/phpldapadmin/lib/TemplateRender.php
+ 
+Change line 2469 to:
+
+	$default = $this->getServer()->getValue('appearance','password_hash_custom');
+
+
+Create a basic web page for the server:
+
+	sudo rm /var/www/html/index.html 
+	sudo nano /var/www/html/index.html 
+
+Enter the following, save, and exit:
+
+	<h1>NewLifeOrissa.net</h1>
+	<br><br>
+	<a href='/phpldapadmin'>User Admin</a>
+
+Navigate to the webpage http://192.168.100.254 and click on the User Admin link.
+
+Login to the LDAP manager using the password you set above.
+
+To add a record to the LDAP:
+
+* Click on the plus sign to expand your domain.
+* Click on "Create new entry here"
+
+Let's setup some basic records. We will organize our users into 'groups':
+
+* Click on the plus sign to expand your domain in the left menu.
+* Click on "Create new entry here"
+* Create a record with the "Generic: Organizational Unit" template.
+* Call it "groups"
+* Commit the record
+
+Repeat the above steps to create a "users" unit:
+
+* Create a record with the "Generic: Organizational Unit" template.
+* Call it "groups"
+* Commit the record
+
+Create groups called "admin":
+
+* Click on the "groups" record in the left menu.
+* Click on "Create a child entry" in the right panel.
+* Choose the "Generic: Posix Group" template.
+* Enter "admin" for the group name.
+* Commit the record
+
+Repeat the above steps to create a "user" group.
+
+Now we can setup users:
+
+* Click on the "user" group under "groups" in the left menu.
+* Click on "Create a child entry" in the right panel.
+* Choose the "Generic: User Account" template.
+* Fill out the user info, making sure the common name and home directory match and are unique:
+	* Common name: Jonathan Gould
+	* First name: Jonathan
+	* GID Number: user
+	* Home directory: /home/users/jgould
+	* Last name: Gould
+	* Login shell: /bin/sh
+	* Password: mypassword
+	* User ID: jgould
+
+ 
 
 **Setup the Chroot**
 
@@ -117,10 +239,9 @@ Add the sources, save, and exit:
 	
 Update the source cache, and continue to install:
 
-	apt-get install nano
+	apt-get update
 	apt-get install edubuntu-desktop
 	apt-get install linux-image-generic-lts-trusty
-	apt-get remove modemmanager
 	
 Now determine the kernel version (using version number in /boot - ours is 3.13.0-24-generic):
 
@@ -144,13 +265,17 @@ Then edit the fstab file:
 	
 Add the following, save, and exit:
 
-	192.168.100.254:/home nfs auto,noatime,nolock,bg,nfsvers=4,intr,tcp,actimeo=1800 0 0
+	192.168.100.254:/home /home nfs auto,noatime,nolock,bg,nfsvers=4,intr,tcp,actimeo=1800 0 0
 
 **Setup Overlayroot**
 
 (still in chroot)
 
-As the NFS root is read only, the Chromebook needs somewhere to write temp files, print jobs, etc. Edit the overlayroot.conf:
+As the NFS root is read only, the Chromebook needs somewhere to write temp files, print jobs, etc. Install overlayroot:
+
+	apt-get install overlayroot
+
+Edit the overlayroot.conf:
 
 	nano /etc/overlayroot.conf
 	
@@ -159,6 +284,17 @@ Set the following, save, and exit:
 	overlayroot="tmpfs"
 	
 This will create temp folders in memory. Later we'll move this to the Chromebooks flash.
+
+**Install Language Packs**
+
+Language packs are installed by a two digit code, which can be found [here](http://www.loc.gov/standards/iso639-2/php/English_list.php). To test the code, type:
+
+	check-language-support -l en
+	
+Which will display all packages available for english. To install those packages, type:
+
+	yes | apt-get install `check-language-support -l en`
+	
 
 **Set the Image Locale**
 
@@ -169,16 +305,16 @@ We need to set the language of the image. The following selects US English:
 	locale-gen en_US.UTF-8
 	dpkg-reconfigure locales
 	
-**Install Language Packs**
+Edit the environment file:
 
-Language packs are installed by a two digit code, which can be found [here](http://www.loc.gov/standards/iso639-2/php/English_list.php). To test the code, type:
-
-	check-language-support -l fr
+	nano /etc/environment
 	
-Which will display all packages available for french. To install those packages, type:
+Add the following lines, save, and exit:
 
-	yes | apt-get install `check-language-support -l fr`
+	LC_ALL=en_US.UTF-8
+	LANG=en_US.UTF-8
 	
+
 
 **Install Network Driver**
 
@@ -189,9 +325,12 @@ We need to build a module for the USB gigabit network card (we are using an Asix
 	cd /asix
 	nano Makefile
 	
-Edit the CURRENT variable to reflect our kernel version (detection doesnt work well in a chroot), save, and exit:
+Edit the CURRENT variable to reflect our kernel version (detection doesnt work well in a chroot), and modify the install line, save, and exit:
 
 	CURRENT = 3.13.0-24-generic
+	
+	install:
+        su -c "cp -v $(TARGET).ko $(DEST) && /sbin/depmod -a $(CURRENT)"
 	
 Now make and install the driver:
 
@@ -205,7 +344,7 @@ Now make and install the driver:
 
 NFS requires some more configuration. Edit the initramfs.conf:
 
-nano /etc/initramfs-tools/initramfs.conf
+	nano /etc/initramfs-tools/initramfs.conf
 
 Change these settings, save, and exit:
 
@@ -241,12 +380,7 @@ Set the following, save, and exit:
 	
 	auto eth0
 	iface eth0 inet dhcp
-
-Set the permissions on the script:
-
-	cd /etc/initramfs-tools/scripts/init-bottom/
-	chown root:root 09-hostname
-	chmod 700 09-hostname
+	
 	
 **Client Hostname**
 
@@ -269,10 +403,13 @@ The Chromebook needs some custom modules to fix issues with video and the trackp
 Run the script:
 
 	cd /chromeos/
+	chmod a+x trusty-patch.sh
 	./trusty-patch.sh
 	update-initramfs -u
 
 **Fix Suspend Issue**
+
+(still in chroot)
 
 A script is need to fix some suspend issues. Download the 05_sound script from this repo to /etc/pm/sleep.d/ and give it the right permissions:
 
@@ -299,7 +436,7 @@ Do not remove the line at the end that says "exit 0"
 
 **Fix Shutdown Script**
 
-(outside the chroot)
+(still in chroot)
 
 A default shutdown script appears to try to unmount the root NFS mount too early during shutdown. Edit the script:
 
@@ -314,6 +451,76 @@ Change to match below, save, and exit:
 	if [ "$DIRS" -ne "/media/root-ro" ]
 	
 Be careful with the spaces and make sure it is exactly as above.
+
+**LDAP**
+
+(still in chroot)
+
+Configure the chromebook to authenticate against the server:
+
+	apt-get install ldap-auth-client nscd
+	
+When prompted, configure the ldap client:
+
+	LDAP server Uniform Resource Identifier:
+	ldapi:///192.168.100.254
+	
+	Distinguished name of the search base:
+	dc=yourdomain,dc=org
+	
+	LDAP Version:
+	3
+	
+	Make local root Database admin:
+	No
+	
+	Does LDAP database require login?
+	No
+	
+	Local crypt to use when changing passwords:
+	md5
+	
+If you make a mistake, you can change these settings here:
+
+	dpkg-reconfigure ldap-auth-config
+	
+Edit the nsswitch.conf file:
+
+	nano /etc/nsswitch.conf
+	
+Set the settings, save, and exit:
+
+	passwd:         ldap compat
+	group:          ldap compat
+	shadow:         ldap compat
+	
+Edit the common-session file:
+
+	nano /etc/pam.d/common-session
+	
+Add a line at the bottom that reads:
+
+	session required    pam_mkhomedir.so skel=/etc/skel umask=0022
+
+	
+**Update Initramfs**
+
+(still in chroot)
+
+Build a final init image before copying to the chromebook:
+
+	update-initramfs -u
+	
+Exit the chroot:
+
+	umount /proc
+	exit
+	
+Then clean up the hostname file in the chroot (sometimes get set during update-initramfs):
+
+	sudo nano /opt/nfs/etc/hostname
+	
+Make sure the file is empty.
 	
 **Test the Image**
 
