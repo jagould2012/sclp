@@ -202,7 +202,7 @@ Create a basic web page for the server:
 
 Enter the following, save, and exit:
 
-	<h1>NewLifeOrissa.net</h1>
+	<h1>YourDomain.org</h1>
 	<br><br>
 	<a href='/phpldapadmin'>User Admin</a>
 
