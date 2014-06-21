@@ -69,8 +69,10 @@ And set the following settings, save, and exit:
 	
 **Setup the Router**
 
-The server will act as a router for all of the Chromebooks. Setup the router:
+The server will act as a router for all of the Chromebooks. Download nat.sh from this repo to /etc/init.d/ and set the permissions:
 
+	chmod a+x /etc/init.d/nat.sh
+	sudo ln -s /etc/init.d/nat.sh /etc/rc2.d/S95masquradescript
 
 
 **Setup the NFS Server**
@@ -610,7 +612,6 @@ Later, after we test out the image, we will make legacy mode the permament boot 
 
 Incomplete - more instructions to come:
 
-* Enable IP forwarding / DNS
 * Connect LDAP to Google education
 * Hamachi remote access
 * Install on Chromebook
