@@ -125,26 +125,23 @@ With the following options:
 	
 To make our LDAP perform better, lets setup some indexes:
 
-	sudo nano /etc/ldap/sldap.conf
+	nano ~/index.ldif
 	
-Add these lines, save, and exit:
+Enter these lines, save, and exit:
 
-	index   objectClass             eq
-	index   cn                      pres,sub,eq
-	index   sn                      pres,sub,eq
-	index   uid                     pres,sub,eq
-	index   displayName             pres,sub,eq
-	index   default                 sub
-	index   uidNumber               eq
-	index   gidNumber               eq
-	index   mail,givenName          eq,subinitial
-	index   dc                      eq
+	dn: olcDatabase={1}hdb,cn=config
+	add: olcDbIndex
+	olcDbIndex: uid eq
+	olcDbIndex: uidNumber eq
+	olcDbIndex: gidNumber eq
+	olcDbIndex: memberUid eq
+	olcDbIndex: cn eq
+	olcDbIndex: uniqueMember eq
+
 	
 Then start the indexing:
 
-	sudo /etc/init.d/slapd stop
-	sudo slapindex
-	sudo /etc/init.d/slapd start
+	sudo ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f index.ldif
 	
 LDAP is easier to manage with a graphical interface. Install the manager:
 
@@ -607,8 +604,6 @@ Later, after we test out the image, we will make legacy mode the permament boot 
 
 Incomplete - more instructions to come:
 
-* LDAP
-* Home folders
 * Enable IP forwarding / DNS
 * Connect LDAP to Google education
 * Hamachi remote access
