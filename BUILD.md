@@ -274,6 +274,18 @@ Add the following line, save, and exit:
 
 	0 * * * * /home/administrator/GoogleAppsDirSync/sync-cmd -c /home/administrator/GoogleAppsDirSync/sampleGADS.xml -a > /home/administrator/GoogleAppsDirSync/cron.log 2>&1
  
+**Setup Remote Access**
+
+Hamachi is a great way to remotely access deployed servers. For $29 per year, we can connect to up to 32 remote servers. Visit www.logmein.com for more info. 
+
+After downloading the Hamachi command line client, install it:
+
+	sudo dpkg -i logmein-hamachi_2.1.0.119-1_amd64.deb
+	sudo hamachi login
+	sudo hamachi set-nick <Nickname of site>
+	sudo hamachi do-join 000-000-000
+
+We recommend configuring your Hamachi network as a mesh, with a required password, and requiring approval before joining.
 
 **Setup the Chroot**
 
@@ -645,8 +657,6 @@ Later, after we test out the image, we will make legacy mode the permament boot 
 
 Incomplete - more instructions to come:
 
-* Connect LDAP to Google education
-* Hamachi remote access
 * Install on Chromebook
 * Make legacy permanent
 * Set grub default / time
