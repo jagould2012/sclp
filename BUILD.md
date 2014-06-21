@@ -123,6 +123,29 @@ With the following options:
 	Allow LDAPv2 protocol?
 	No
 	
+To make our LDAP perform better, lets setup some indexes:
+
+	sudo nano /etc/ldap/sldap.conf
+	
+Add these lines, save, and exit:
+
+	index   objectClass             eq
+	index   cn                      pres,sub,eq
+	index   sn                      pres,sub,eq
+	index   uid                     pres,sub,eq
+	index   displayName             pres,sub,eq
+	index   default                 sub
+	index   uidNumber               eq
+	index   gidNumber               eq
+	index   mail,givenName          eq,subinitial
+	index   dc                      eq
+	
+Then start the indexing:
+
+	sudo /etc/init.d/slapd stop
+	sudo slapindex
+	sudo /etc/init.d/slapd start
+	
 LDAP is easier to manage with a graphical interface. Install the manager:
 
 	sudo apt-get install phpldapadmin
@@ -145,6 +168,13 @@ Change line 2469 to:
 
 	$default = $this->getServer()->getValue('appearance','password_hash_custom');
 
+Enable bash shell as an option. Edit posixAccount.xml:
+
+	sudo nano /etc/phpldapadmin/templates/creation/posixAccount.xml
+
+Add this option under loginShell, save, and exit:
+
+	<value id="/bin/bash">/bin/bash</value>
 
 Create a basic web page for the server:
 
@@ -177,12 +207,12 @@ Let's setup some basic records. We will organize our users into 'groups':
 Repeat the above steps to create a "users" unit:
 
 * Create a record with the "Generic: Organizational Unit" template.
-* Call it "groups"
+* Call it "users"
 * Commit the record
 
 Create groups called "admin":
 
-* Click on the "groups" record in the left menu.
+* Click on the "ou=groups" record in the left menu.
 * Click on "Create a child entry" in the right panel.
 * Choose the "Generic: Posix Group" template.
 * Enter "admin" for the group name.
@@ -192,7 +222,7 @@ Repeat the above steps to create a "user" group.
 
 Now we can setup users:
 
-* Click on the "user" group under "groups" in the left menu.
+* Click on the "ou=users" record in the left menu.
 * Click on "Create a child entry" in the right panel.
 * Choose the "Generic: User Account" template.
 * Fill out the user info, making sure the common name and home directory match and are unique:
@@ -463,7 +493,7 @@ Configure the chromebook to authenticate against the server:
 When prompted, configure the ldap client:
 
 	LDAP server Uniform Resource Identifier:
-	ldapi:///192.168.100.254
+	ldap://192.168.100.254
 	
 	Distinguished name of the search base:
 	dc=yourdomain,dc=org
@@ -501,6 +531,10 @@ Edit the common-session file:
 Add a line at the bottom that reads:
 
 	session required    pam_mkhomedir.so skel=/etc/skel umask=0022
+
+Execute the following command to customize the login screen:
+
+	sudo sh -c 'printf "[SeatDefaults]\nallow-guest=false\ngreeter-hide-users=true\ngreeter-show-manual-login=true\n" >/usr/share/lightdm/lightdm.conf.d/50-no-guest.conf'
 
 	
 **Update Initramfs**
