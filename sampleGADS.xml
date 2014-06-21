@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config version="3.2.1" id="0ed665896e5d4ee48732642ab61594ed" rev="d78db6054dd64798a2b791032a528cdd" marker="314">
+  <features>
+    <optional>SKIP_ORGUNITS</optional>
+    <optional>GROUPS</optional>
+    <optional>FAMILY_NAME</optional>
+    <optional>GROUP_OWNER</optional>
+    <optional>SKIP_SUSPENDING_ADMINS</optional>
+    <optional>SKIP_EXISTING_PASSWORDS</optional>
+    <optional>GROUP_DESCRIPTION</optional>
+    <optional>SHA1_PASSWORD</optional>
+    <optional>MULTIDOMAIN</optional>
+    <optional>ALIAS_SYNCHRONIZATION</optional>
+    <optional>GOOGLE_QUOTA</optional>
+    <optional>INDEPENDENT_GROUP_SYNC</optional>
+    <optional>SKIP_USER_PROFILES</optional>
+    <optional>BASE64_PASSWORD</optional>
+    <optional>MD5_PASSWORD</optional>
+    <optional>GIVEN_NAME</optional>
+    <optional>SKIP_SHARED_CONTACTS</optional>
+    <optional>SKIP_CALENDAR_RESOURCES</optional>
+    <optional>NON_ADDRESS_PRIMARY_KEY</optional>
+    <optional>SUSPEND_USERS</optional>
+    <optional>DYNAMIC_GROUPS</optional>
+  </features>
+  <logging>
+    <defaultLogLevel>INFO</defaultLogLevel>
+    <format>[%d{ISO8601}] [%t] [%p] [%C{3}] %m%n</format>
+    <logFile>/home/administrator/GADS_sync.log</logFile>
+    <maximumLogBytes>4294967296</maximumLogBytes>
+    <logFileCount>1</logFileCount>
+  </logging>
+  <notification>
+    <smtpRelay>127.0.0.1</smtpRelay>
+    <fromAddress>admin@yourdomain.org</fromAddress>
+    <toAddress>admin@yourdomain.org</toAddress>
+    <ignoreRetrievalInfo>false</ignoreRetrievalInfo>
+    <ignoreRetrievalWarnings>false</ignoreRetrievalWarnings>
+    <ignoreRetrievalErrors>false</ignoreRetrievalErrors>
+  </notification>
+  <eventLimits>
+    <deleteUserLimitPCT>5</deleteUserLimitPCT>
+    <suspendUserLimitPCT>5</suspendUserLimitPCT>
+    <deleteGroupLimitPCT>5</deleteGroupLimitPCT>
+    <deleteOrgunitLimitPCT>5</deleteOrgunitLimitPCT>
+    <deleteSharedContactLimitPCT>5</deleteSharedContactLimitPCT>
+    <deleteCalendarResourceLimitPCT>5</deleteCalendarResourceLimitPCT>
+  </eventLimits>
+  <!--  cache lifetime specified in seconds, default value is 8 days -->
+  <maxCacheLifetime>691200</maxCacheLifetime>
+  <!-- specifies whether to calculate cache lifetime dynamically or not. If set to false, then
+    maxCacheLifetime value is used as cache lifetime. If set to true, then cache lifetime is
+    calculated dynamically -->
+  <useDynamicMaxCacheLifetime>true</useDynamicMaxCacheLifetime>
+  <!-- specifies the filename for storing calendar resource mapping. Its default value is
+    calResMapping.csv -->
+  <calendarResourceMappingFilename>calResMapping.csv</calendarResourceMappingFilename>
+  <!-- Plugin definitions and the individual plugin configurations. -->
+  <plugins>
+    <remote>
+      <plugin class="com.google.usersyncapp.plugin.google.GooglePlugin">
+        <config version="0.2">
+          <adminEmail>admin@yourdomain.org</adminEmail>
+          <encryptedAdminPassword><!--YOUR PASSWORD--></encryptedAdminPassword>
+          <domain>yourdomain.org</domain>
+          <loginMethod>CLIENTLOGIN</loginMethod>
+          <oAuth2RefreshToken></oAuth2RefreshToken>
+          <googleUsersSyncThreads>30</googleUsersSyncThreads>
+          <googleProfilesSyncThreads>30</googleProfilesSyncThreads>
+          <googleContactsSyncThreads>15</googleContactsSyncThreads>
+          <nonAddressPrimaryKeyMapFile>/home/administrator/GADS_nonAddressPrimaryKeyFile.tsv</nonAddressPrimaryKeyMapFile>
+          <passwordTimestampFile>/home/administrator/GADS_passwordTimestampCache.tsv</passwordTimestampFile>
+          <googleCredMachineName>ubuntu</googleCredMachineName>
+        </config>
+      </plugin>
+    </remote>
+    <local>
+      <plugin class="com.google.usersyncapp.plugin.ldap.LDAPPlugin">
+        <config version="0.2">
+          <serverType>OPENLDAP</serverType>
+          <connectMethod>STANDARD</connectMethod>
+          <hostname>127.0.0.1</hostname>
+          <port>389</port>
+          <basedn>dc=yourdomain,dc=net</basedn>
+          <authType>SIMPLE</authType>
+          <authUser>cn=admin,dc=yourdomain,dc=org</authUser>
+          <authCredentialsEncrypted><!--YOUR PASSWORD--></authCredentialsEncrypted>
+          <nonAddressPrimaryKeyAttrName>uid</nonAddressPrimaryKeyAttrName>
+          <emailAttrName>mail</emailAttrName>
+          <ldapCredMachineName>ubuntu</ldapCredMachineName>
+          <dominoWhiteSpaceReplaceChar>.</dominoWhiteSpaceReplaceChar>
+          <givenNameAttrName>givenName</givenNameAttrName>
+          <familyNameAttrName>sn</familyNameAttrName>
+          <md5PasswordAttrName>userPassword</md5PasswordAttrName>
+          <generatedPasswordLength>8</generatedPasswordLength>
+          <resultsPageSize>1000</resultsPageSize>
+          <orgunits>
+            <search>
+              <priority>1</priority>
+              <scope>SUBTREE</scope>
+              <filter>(objectClass=organizationalUnit)</filter>
+              <descriptionAttrName>description</descriptionAttrName>
+            </search>
+          </orgunits>
+          <users>
+            <search>
+              <priority>1</priority>
+              <basedn>ou=users,dc=newlifeorissa,dc=net</basedn>
+              <suspended>false</suspended>
+              <scope>SUBTREE</scope>
+              <orgMappingAttribute />
+              <filter>(objectClass=inetOrgPerson)</filter>
+            </search>
+          </users>
+          <groups />
+          <sharedContacts>
+            <search>
+              <priority>0</priority>
+              <fullNameAttrName>cn</fullNameAttrName>
+            </search>
+          </sharedContacts>
+          <userProfiles>
+            <search>
+              <priority>1</priority>
+            </search>
+          </userProfiles>
+          <calendarResources>
+            <search>
+              <priority>1</priority>
+            </search>
+          </calendarResources>
+          <mailingLists />
+        </config>
+      </plugin>
+    </local>
+  </plugins>
+</config>
+

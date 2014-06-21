@@ -177,9 +177,23 @@ Enable bash shell as an option. Edit posixAccount.xml:
 
 	sudo nano /etc/phpldapadmin/templates/creation/posixAccount.xml
 
-Add this option under loginShell, save, and exit:
+Add this option under loginShell:
 
 	<value id="/bin/bash">/bin/bash</value>
+	
+Add the following lines to the givenName and sn attributes (replacing with your domain name):
+
+	<onchange>=autoFill(mail;%givenName|0-1/l%%sn/l%@newlifeorissa.net)</onchange>
+
+Add a new attribute:
+
+	<attribute id="mail">
+        <display>Mail</display>
+        <order>3</order>
+        <page>1</page>
+	</attribute>
+
+Save, and exit.
 
 Create a basic web page for the server:
 
@@ -240,6 +254,25 @@ Now we can setup users:
 	* Password: mypassword
 	* User ID: jgould
 
+**Sync with Google Apps**
+
+LDAP accounts will automatically be setup with Google Education using their ldap sync. Download the Google Apps Directory sync app from Google, and the example xml config file from this repo.
+
+The xml file needs to be modified to match your system (LDAP passwords, etc). The GADS package comes with a tool for encrypting the LDAP and Google Apps passwords in the xml file. This must be done on the server.
+
+	./encrypt-util -c sampleGADS.xml
+	
+You can test your sync by running the sync tool in simulate mode:
+
+	./sync-cmd -c sampleGADS.xml
+	
+Once the tool simulates a successful sync, you can automate tool to run hourly:
+
+	crontab -e
+	
+Add the following line, save, and exit:
+
+	0 * * * * /home/administrator/GoogleAppsDirSync/sync-cmd -c /home/administrator/GoogleAppsDirSync/sampleGADS.xml -a > /home/administrator/GoogleAppsDirSync/cron.log 2>&1
  
 
 **Setup the Chroot**
