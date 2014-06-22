@@ -1,10 +1,6 @@
 sclp - build
 ====
 
-***
-**WARNING - these instructions are incomplete at this time. Feel free to follow along as we update them, but when you get to the end, you wont have a working system. This warning will be removed when the instructions are complete.**
-***
-
 **Introduction**
 
 This step-by-step guide walks you through building the SCLP server and Chromebook boot image from scratch.
@@ -428,7 +424,7 @@ NFS requires some more configuration. Edit the initramfs.conf:
 
 Change these settings, save, and exit:
 
-	MODULES=netboot
+	MODULES=most
 	BOOT=nfs
 	DEVICE=eth0
 	NFSROOT=192.168.100.254:/opt/nfs
@@ -653,15 +649,81 @@ Reboot the Chromebook. At the white splash screen, press Ctrl-L to boot to legac
 
 Later, after we test out the image, we will make legacy mode the permament boot option eliminating the need for all these steps.  
 
+**Final Installation**
+
+Now that we have a working boot image, its time to install it permanently.
+
+First, we need to make the Chromebook always boot to legacy mode. This involves removing the write protect screw inside.
+
+* Remove all the screws on the bottom case.
+* Remove the large black write protect screw (pictures are available on the Internet).
+* Install the bottom cover back on, with only the battery enable screw.
+* Boot the machine back up and re-enter developer mode.
+* Follow the original instructions to get to a command prompt.
+
+At the prompt enter:
+
+	sudo bash
+	/usr/bin/set_gbb_flags.sh 0×489
+
+Shutdown the machine, reinstall the write protect screw, and reassemble.
+
+Reboot to Edubuntu - you wont need to do Ctrl-l anymore.	
+Login to Edubuntu as a user that is in the admin group and execute the following commands:
+
+	sudo fdisk /dev/sda
+	
+	d (delete current partition)
+	n (new partition)
+	p, 1, 2048, +512M (create partition 1 with 512M)
+	n (new partition)
+	p, 1, default, default (create partition 2 with remaining space)
+	w (write)
+	
+	sudo mkfs.ext3 /dev/sda1
+	sudo mkfs.ext3 /dev/sda2
+	
+Now we have two new partitions - sda1 to hold the boot files, sda2 to hold our overlayroot
+
+Install the boot files:
+	
+	sudo mkdir -p /mnt/sda1
+	sudo mount /dev/sda1 /mnt/sda1
+	sudo mkdir -p /mnt/sda1/boot
+	sudo grub-install --boot-directory=/mnt/sda1/boot /dev/sda
+	sudo cp <location of files>/vmlinuz /mnt/sda1/boot/vmlinuz
+	sudo cp <location of files>/initrd.img /mnt/sda1/boot/initrd.img
+		
+
+
+Create a new grub config on the drive in /boot/grub/grub.cfg:
+
+	sudo nano /mnt/sda1/boot/grub/grub.cfg
+	
+Enter the following, save, and exit:
+
+	insmod ext3
+	set default=0
+	set timeout=1
+	
+	menuentry "Edubuntu Workstation" {
+		root=(hd0,msdos1)
+		linux /boot/vmlinuz root=/dev/nfs nfsroot=192.168.100.254:/opt/nfs,ro ip=dhcp netboot=nfs rootdelay=5 noresume noswap i915.modeset=1 tpm_tis.force=1 tpm_tis.interrupts=0 nmi_watchdog=panic,lapic quiet splash
+		initrd /boot/initrd.img 		
+	}
+
+
+Enter the chroot on the server and edit the overlayroot.conf:
+
+	nano /etc/overlayroot.conf
+	
+Set the following, save, and exit:
+
+	overlayroot=device:dev=/dev/sda2,fstype=ext3,timeout=20 
+
 ***
 
-Incomplete - more instructions to come:
-
-* Install on Chromebook
-* Make legacy permanent
-* Set grub default / time
-* Move overlay to sda
-* Add splash and quiet
+You should now have a fully functional Edubuntu Chromebook booting NFS from your server!
 
 
 
