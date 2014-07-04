@@ -49,7 +49,7 @@ Then edit the dhcpf.conf
 
 	sudo nano /etc/dhcp/dhcpd.conf
 	
-And set the following settings, save, and exit:
+And set the following settings with each of your workstations adapters, save, and exit:
 
 	option domain-name "yourdomain.org";
 	option domain-name-servers 192.168.100.254;
@@ -60,9 +60,25 @@ And set the following settings, save, and exit:
 
 
 	subnet 192.168.100.0 netmask 255.255.255.0 {
-		range 192.168.100.2 192.168.100.99;
+		range 192.168.100.50 192.168.100.99;
+		
+		host ws1 {
+			hardware ethernet 00:23:56:0C:03:09;
+			fixed-address 192.168.100.1;
+			option host-name "ws1";
+		}
+		
 	} 
 	
+Edit the etc hosts file:
+
+	sudo nano /etc/hosts
+	
+Add each workstation and the server, save and exit:
+
+	127.0.1.1 Server Server.yourdomain.org
+	192.168.100.1	ws1 ws1.yourdomain.org 	
+
 **Setup the Router**
 
 The server will act as a router for all of the Chromebooks. Download nat.sh from this repo to /etc/init.d/ and set the permissions:
@@ -457,18 +473,33 @@ Set the following, save, and exit:
 	auto eth0
 	iface eth0 inet dhcp
 	
+	iface wlan0 inet manual
 	
 **Client Hostname**
 
 (still in chroot)
 
-Chromebooks booted from the NFS need a unique hostname assigned to them. Download the hostname script from this repo and copy it to /etc/initramfs-tools/scripts/init-bottom/ in the chroot.
+Chromebooks booted from the NFS need a unique hostname assigned to them.
 
-Set the permissions on the script:
+Edit the dhclient.conf
 
-	cd /etc/initramfs-tools/scripts/init-bottom/
-	chown root:root 09-hostname
-	chmod 700 09-hostname
+	nano /etc/dhclient.conf
+
+Comment out the send host-name line, save, and exit:
+
+	#send host-name = gethostname();
+	
+	
+Edit the etc hosts file:
+
+	sudo nano /etc/hosts
+	
+Add each workstation and the server, save and exit:
+
+	127.0.1.1 Server Server.yourdomain.org
+	
+	192.168.100.1	ws1 ws1.yourdomain.org 	
+	
 	
 **Acer Modules**
 
@@ -535,6 +566,9 @@ Be careful with the spaces and make sure it is exactly as above.
 Configure the chromebook to authenticate against the server:
 
 	apt-get install ldap-auth-client nscd
+	apt-get install libnss-ldapd pam-kwallet
+	auth-client-config -t nss -p lac_ldap
+	
 	
 When prompted, configure the ldap client:
 
@@ -560,15 +594,6 @@ If you make a mistake, you can change these settings here:
 
 	dpkg-reconfigure ldap-auth-config
 	
-Edit the nsswitch.conf file:
-
-	nano /etc/nsswitch.conf
-	
-Set the settings, save, and exit:
-
-	passwd:         ldap compat
-	group:          ldap compat
-	shadow:         ldap compat
 	
 Edit the common-session file:
 
@@ -596,11 +621,6 @@ Exit the chroot:
 	umount /proc
 	exit
 	
-Then clean up the hostname file in the chroot (sometimes get set during update-initramfs):
-
-	sudo nano /opt/nfs/etc/hostname
-	
-Make sure the file is empty.
 	
 **Test the Image**
 
@@ -726,5 +746,8 @@ Set the following, save, and exit:
 You should now have a fully functional Edubuntu Chromebook booting NFS from your server!
 
 
+***
 
+Remaining issues:
 
+* Occasional slow boot - server? LDAP? Check syslog
